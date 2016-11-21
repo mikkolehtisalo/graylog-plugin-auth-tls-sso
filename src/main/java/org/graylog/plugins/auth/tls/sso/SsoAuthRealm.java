@@ -106,7 +106,7 @@ public class SsoAuthRealm extends AuthenticatingRealm {
                     user = userService.create();
 
                     user.setName(userinfo.username);
-                    user.setExternal(true);
+                    user.setExternal(false);
                     user.setPassword("dummy password");
                     user.setPermissions(Collections.emptyList());
                     user.setFullName(userinfo.fullname);
