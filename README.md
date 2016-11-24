@@ -17,8 +17,11 @@ and can be configured in your `graylog.conf` file.
 Configure the web server or the load balancer to handle client certificate authentication, and to pass the certificate
 information to Graylog. It is important to notice that **the plugin does not validate the certificates**. This must be
  done by the front-end services.
+ 
+Remember to restart `graylog-server`, and the web server or load balancer after configuration changes.
 
-Example configuration for Apache (2.3.3+):
+Example configuration for Apache (2.3.3+)
+------------------------------------------
 
 ```
 # Basics
@@ -56,7 +59,27 @@ RequestHeader set tls-client-cert "%{SSL_CLIENT_CERT}s"
 SSLOCSPEnable on
 ```
 
-Restart `graylog-server`, and the web server or load balancer.
+Example configuration for F5 BIG-IP
+-------------------------------------
+
+Configure the following:
+
+* Import the front-end certificate and keys
+* Import CA certificates of the clients, as concatenated PEM
+* Change the (client) SSL profile to *require* client authentication, and add the CA certificates
+* Add certificate validation (OCSP/CRL) related configuration to client profile
+* Add to virtual Service: Service port 443 (HTTPS), http profile, SSL profile (client/clientssl)
+* Add an iRule for injecting the header to the virtual service
+
+Example iRule:
+
+```
+ when HTTP_REQUEST {
+    if { [SSL::cert count] > 0 } {
+        HTTP::header insert "tls-client-cert" [X509::whole [SSL::cert 0]]
+    }
+}
+```
 
 Development
 -----------
